@@ -21,9 +21,18 @@ if status is-interactive
             or functions -c $func '__async_prompt_'$func'_orig'
 
             function $func -V func
-                eval 'echo $__async_prompt_'$func'_text'
+                eval 'echo $__async_prompt_'$func'_disp'
             end
         end
+
+        if functions -q 'async_prompt_prehook'
+            functions -c async_prompt_prehook __async_prompt_prehook
+        else
+            function __async_prompt_prehook
+                echo $argv
+            end
+        end
+
     end
 
     function __async_prompt_reset --on-variable async_prompt_functions
@@ -45,6 +54,7 @@ if status is-interactive
 
     function __async_prompt_sync_val --on-signal WINCH
         for func in (__async_prompt_config_functions)
+            eval set -g '__async_prompt_'$func'_disp' '"'(echo '$__async_prompt_'$func'_text')'"'
             __async_prompt_var_move '__async_prompt_'$func'_text' '__async_prompt_'$func'_text_'(__async_prompt_pid)
         end
     end
@@ -63,6 +73,7 @@ if status is-interactive
         set st $status
 
         for func in (__async_prompt_config_functions)
+            set '__async_prompt_'$func'_disp' (__async_prompt_prehook (eval echo '"'(echo '$__async_prompt_'$func'_text')'"'))
             __async_prompt_config_inherit_variables | __async_prompt_spawn $st $func' | read -z prompt; and set -U __async_prompt_'$func'_text_'(__async_prompt_pid)' $prompt'
             function '__async_prompt_'$func'_handler' --on-process-exit (jobs -lp | tail -n1)
                 kill -WINCH (__async_prompt_pid)
