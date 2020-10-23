@@ -1,6 +1,7 @@
 # fish-async-prompt
 
 Make your prompt asynchronous in Fish shell.
+patched with 0Delta.
 
 ## Description
 
@@ -34,6 +35,22 @@ Other functions can be specified, but they must be called from `fish_prompt` or 
 
 **Default:** `fish_prompt fish_right_prompt`
 
+### Function: `async_prompt_prehook`
+
+Define a function to customize the pre-update prompt.
+
+**Default:**
+
+```
+function async_prompt_prehook
+  echo $argv
+end
+```
+
 ## Author
 
-- [acomagu](https://github.com/acomagu)
+[@0Delta](https://github.com/0delta)
+
+## Special Thanks
+
+- fish-async-prompt original creator [acomagu](https://github.com/acomagu)
