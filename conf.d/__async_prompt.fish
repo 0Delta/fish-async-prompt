@@ -13,6 +13,14 @@ if status is-interactive
             end
         end
 
+        if functions -q 'async_prompt_prehook'
+            functions -c async_prompt_prehook __async_prompt_prehook
+        else
+            function __async_prompt_prehook
+                echo "*$argv"
+            end
+        end
+
         set -q async_prompt_functions
         and set -g __async_prompt_functions_internal $async_prompt_functions
 
@@ -37,7 +45,6 @@ if status is-interactive
         for func in (__async_prompt_config_functions)
             if functions -q '__async_prompt_'$func'_orig'
                 functions -e $func
-
                 # If the function is defined redaundantly, cannot override it by
                 # `functions -c` so done it by create wrapper function.
                 function $func -V func
@@ -69,6 +76,7 @@ if status is-interactive
         set st $status
 
         for func in (__async_prompt_config_functions)
+            set '__async_prompt_'$func'_text' (__async_prompt_prehook (eval echo '"'(echo '$__async_prompt_'$func'_text')'"'))
             __async_prompt_config_inherit_variables | __async_prompt_spawn $st $func' | read -z prompt; set -U __async_prompt_'$func'_text_'(__async_prompt_pid)' "$prompt"'
             function '__async_prompt_'$func'_handler' --on-job-exit (jobs -lp | tail -n1)
                 kill -WINCH (__async_prompt_pid)
